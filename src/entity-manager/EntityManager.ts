@@ -36,6 +36,7 @@ import { ObjectUtils } from "../util/ObjectUtils"
 import { getMetadataArgsStorage } from "../globals"
 import { UpsertOptions } from "../repository/UpsertOptions"
 import { InstanceChecker } from "../util/InstanceChecker"
+import cloneDeep from "lodash/cloneDeep"
 
 /**
  * Entity manager supposed to work with any entity, automatically find its repository and call its methods,
@@ -1280,27 +1281,27 @@ export class EntityManager {
      */
     getRepository<Entity>(target: EntityTarget<Entity>): Repository<Entity> {
         // find already created repository instance and return it if found
-        const repository = this.repositories.find(
-            (repository) => repository.target === target,
-        )
-        if (repository) return repository
+        // const repository = this.repositories.find(
+        //     (repository) => repository.target === target,
+        // )
+        // if (repository) return repository
 
         // if repository was not found then create it, store its instance and return it
         if (this.connection.driver.options.type === "mongodb") {
             const newRepository = new MongoRepository(
-                target,
-                this,
-                this.queryRunner,
+                cloneDeep(target),
+                cloneDeep(this),
+                cloneDeep(this.queryRunner),
             )
-            this.repositories.push(newRepository as any)
+            // this.repositories.push(newRepository as any)
             return newRepository
         } else {
             const newRepository = new Repository<any>(
-                target,
-                this,
-                this.queryRunner,
+                cloneDeep(target),
+                cloneDeep(this),
+                cloneDeep(this.queryRunner),
             )
-            this.repositories.push(newRepository)
+            // this.repositories.push(newRepository)
             return newRepository
         }
     }
@@ -1319,14 +1320,18 @@ export class EntityManager {
             throw new TreeRepositoryNotSupportedError(this.connection.driver)
 
         // find already created repository instance and return it if found
-        const repository = this.treeRepositories.find(
-            (repository) => repository.target === target,
-        )
-        if (repository) return repository
+        // const repository = this.treeRepositories.find(
+        //     (repository) => repository.target === target,
+        // )
+        // if (repository) return repository
 
         // check if repository is real tree repository
-        const newRepository = new TreeRepository(target, this, this.queryRunner)
-        this.treeRepositories.push(newRepository)
+        const newRepository = new TreeRepository(
+            cloneDeep(target),
+            cloneDeep(this),
+            cloneDeep(this.queryRunner),
+        )
+        // this.treeRepositories.push(newRepository)
         return newRepository
     }
 
